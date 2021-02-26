@@ -1,0 +1,2 @@
+# exemplos de codigo escrito na linguagem de programacao Python
+# que envia um comando para o HSM e recebe o resultado do comando.
