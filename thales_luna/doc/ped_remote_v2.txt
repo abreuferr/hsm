@@ -1,0 +1,90 @@
+#########################################################
+#
+# MS-WINDOWS WORKSTATION
+#
+#########################################################
+
+C:\Program Files\SafeNet\LunaClient>PEDserver -mode start
+Ped Server Version 1.0.6 (10006)
+Ped Server launched in startup mode.
+Starting background process
+Background process started
+Ped Server Process created, exiting this process.
+
+C:\Program Files\SafeNet\LunaClient>PEDserver -mode show
+Ped Server Version 1.0.6 (10006)
+Ped Server launched in status mode.
+
+   Server Information:
+      Hostname:                           BRSPO055
+      IP:                                 0.0.0.0
+      Firmware Version:                   2.8.0-1
+      PedII Protocol Version:             1.0.1-0
+      Software Version:                   1.0.6 (10006)
+
+      Ped2 Connection Status:             Connected
+      Ped2 RPK Count                      0
+      Ped2 RPK Serial Numbers             (none)
+
+   Client Information:                    Not Available
+
+   Operating Information:
+      Server Port:                        1503
+      External Server Interface:          Yes
+      Admin Port:                         1502
+      External Admin Interface:           No
+
+      Server Up Time:                     256 (secs)
+      Server Idle Time:                   0 (secs) (0%)
+      Idle Timeout Value:                 1800 (secs)
+
+      Current Connection Time:            0 (secs)
+      Current Connection Idle Time:       0 (secs)
+      Current Connection Total Idle Time: 0 (secs) (100%)
+      Total Connection Time:              0 (secs)
+      Total Connection Idle Time:         0 (secs) (100%)
+
+Show command passed.
+
+C:\Program Files\SafeNet\LunaClient>ipconfig
+
+Windows IP Configuration
+
+Wireless LAN adapter Wi-Fi 2:
+
+   Connection-specific DNS Suffix  . :
+   Link-local IPv6 Address . . . . . : fe80::6c87:e6e4:fdbb:c464%20
+   IPv4 Address. . . . . . . . . . . : <IP_DO_PED>
+   Subnet Mask . . . . . . . . . . . : <MASCARA_DE_REDE>
+   Default Gateway . . . . . . . . . : <GATEWAY_DO_LABORATORIO>
+
+Ethernet adapter Conexão de Rede Bluetooth:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . :
+
+C:\Program Files\SafeNet\LunaClient>
+
+#########################################################
+#
+# HSM LUNA
+#
+#########################################################
+
+[luna-ft] lunash:>service restart cbs
+
+Stopping cbs:                                              [  OK  ]
+Starting cbs:                                              [  OK  ]
+
+Command Result : 0 (Success)
+
+
+[luna-ft] lunash:>hsm ped connect -ip <IP_DO_PED> -port 1503
+
+Luna PED operation required to connect to Remote PED - use orange PED key(s).
+
+Error connecting to remote PED with error code: LUNA_RET_PED_UNSUPPORTED_CRYPTO_PROTOCOL
+Error for 'hsm ped connect': 0X300145 (LUNA_RET_PED_UNSUPPORTED_CRYPTO_PROTOCOL)
+Failed to connect the remote PED
+
+Command Result : 65535 (Luna Shell execution)

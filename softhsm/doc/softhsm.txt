@@ -1,0 +1,134 @@
+#: Title : softHSM
+#: Author : "Caio Abreu Ferreira" <abreuferr_gmail.com>
+#: Description : Uma série de informações de como trabalhar com software softHSM
+#: Options : GNU/Linux Debian 12
+#: Reference :
+
+# LABORATÓRIO: use um diretório/configuração SoftHSM dedicado. Os valores entre
+# <...> são exemplos; informe PINs próprios quando o comando solicitar. Não use
+# PINs reais em comandos, histórico do shell ou arquivos versionados.
+# Objetos de teste devem usar o prefixo `lab_` e podem ser removidos ao final.
+
+##############################################################
+#
+# Instalação/configuração
+#
+##############################################################
+
+# instalação
+#
+$ sudo apt install softhsm2 gnutls-bin opensc -y -d
+
+# adicionar usuario ao grupo
+#
+$ sudo usermod -aG softhsm "$USER"
+
+# arquivo de configuração
+#
+$ sudo cat /etc/softhsm/softhsm2.conf
+
+##############################################################
+#
+# Inicialização
+#
+##############################################################
+
+# o comando abaixo
+#   - inicializando um slots do softHSM
+#   - define o PIN para o usuário administrador (SO PIN) e do usuário (User PIN)
+#
+$ softhsm2-util --init-token --slot 0 --label "lab_softhsm"
+
+# alterar o PIN do usuário
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --change-pin
+
+# alterar o PIN do administrador (SO PIN)
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --login-type so --change-pin
+
+# exibir os slots
+#
+$ softhsm2-util --show-slots
+
+##############################################################
+#
+# Criar Chaves de Criptografia
+#
+##############################################################
+
+# rsa 2048
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --token-label lab_softhsm --keypairgen --key-type rsa:2048 --id 01 --label lab_rsa_2048
+
+# ecc
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --token-label lab_softhsm --keypairgen --key-type ec:secp384r1 --id 02 --label lab_ec_384
+
+# koblitz k1
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --token-label lab_softhsm --keypairgen --key-type ec:prime256v1 --id 03 --label lab_ec_256
+
+# aes
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --token-label lab_softhsm --keygen --key-type aes:32 --id 04 --label lab_aes_256
+
+# Visualizar objetos no token
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --list-objects
+
+##############################################################
+#
+# Importar Chave Pública/Privada
+#
+##############################################################
+
+# Gerar um par de chaves pública/privada
+#
+$ openssl genrsa -out private_key.pem 2048
+$ openssl rsa -in private_key.pem -pubout -out public_key.pem
+
+# Importar chave pública/privada
+#
+# OBSEVAÇÃO
+#
+# O COMANDO ABAIXO IMPORTA TANTO A CHAVE PRIVADA QUANTO A CHAVE PÚBLICA (--keypairgen)
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --keypairgen --id 05 --label lab_minha_chave --key-type rsa:2048 --usage-sign
+
+# Importar chave privada
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --write-object private_key.pem --type privkey --id 06 --label lab_chave_privada
+
+# Importar chave pública
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --write-object public_key.pem --type pubkey --id 06 --label lab_chave_publica
+
+# Importar chave privada no formato PEM
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --write-object private_key.pem --type privkey --id 07 --label lab_chave_privada
+
+# Importar chave pública no formato PEM
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --write-object public_key.pem --type pubkey --id 07 --label lab_chave_publica
+
+##############################################################
+#
+# Apagar Chaves de Criptografia
+#
+##############################################################
+
+# DESTRUTIVO: confirme o ID, rótulo e token antes de apagar. Não há desfazer.
+# Apagar chave PRIVADA
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so -l --delete-object --type privkey --id 05
+
+# Apagar chave PÚBLICA
+#
+$ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so -l --delete-object --type pubkey --id 05
+
+##############################################################
+#
+# Criptografar/Descriptografar Arquivo
+#
+##############################################################

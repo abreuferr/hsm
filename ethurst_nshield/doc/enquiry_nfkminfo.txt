@@ -1,0 +1,109 @@
+####################################################################
+#
+# "enquiry"
+#
+####################################################################
+
+$ NFAST_SERVER=/var/lib/docker/volumes/socket1/_data/nserver /opt/nfast/bin/enquiry -m0
+
+Server:
+ enquiry reply flags  none
+ enquiry reply level  Six
+ serial number        090E-03E0-D947
+ mode                 operational
+ version              12.80.4
+ speed index          15843
+ rec. queue           368..566
+ level one flags      Hardware HasTokens SupportsCommandState
+ version string       12.80.4-274-813026a, 12.50.11-270-fb3b87dd465b6f6e53d9f829fc034f8be2dafd13 2019/05/16 22:02:33 BST, Bootloader: 1.2.3, Security Processor: 12.50.11 , 12.60.2-68-0587d6b7
+ checked in           00000000618aeb9c Tue Nov  9 18:43:56 2021
+ level two flags      none
+ max. write size      8192
+ level three flags    KeyStorage
+ level four flags     OrderlyClearUnit HasRTC HasNVRAM HasNSOPermsCmd ServerHasPollCmds FastPollSlotList HasSEE HasKLF HasShareACL HasFeatureEnable HasFileOp HasLongJobs ServerHasLongJobs AESModuleKeys NTokenCmds JobFragmentation LongJobsPreferred Type2Smartcard ServerHasCreateClient HasInitialiseUnitEx AlwaysUseStrongPrimes Type3Smartcard HasKLF2
+ module type code     0
+ product name         nFast server
+ device name
+ EnquirySix version   8
+ impath kx groups
+ feature ctrl flags   none
+ features enabled     none
+ version serial       0
+ level six flags      none
+ remote port (IPv4)   9004
+ kneti hash           1b0f966226b54da4124887ca0574cf85bfabd1fc
+ rec. LongJobs queue  0
+ SEE machine type     None
+ supported KML types
+ active modes         none
+
+####################################################################
+#
+# "nfkminfo"
+#
+####################################################################
+
+$ cd /opt/nfast/sbin
+
+$ ./init.d-ncipher stop
+
+$ cd /opt/nscop/
+
+$ vi make-nshield-application
+DEFAULT_FROM="docker.io/library/debian:buster-slim"
+
+$ ./make-nshield-application /media/cdrom
+
+$ docker image ls
+REPOSITORY                             TAG                 IMAGE ID       CREATED          SIZE
+nshield-ubi7                           12.80.4-java        25e4aeb41c9f   48 minutes ago   802MB
+nfkmverifys                            latest              bea8038e7edf   22 hours ago     204MB
+nshield-ubi7                           12.80.4             f72f1382c8e2   23 hours ago     788MB
+nshield-hwsp                           12.80.4             2f255fb47680   7 days ago       320MB
+debian                                 buster-slim         6dd568177594   3 weeks ago      69.3MB
+
+$ cd /opt/nscop/examples/nfkminfo/
+
+$ vi Dockerfile
+FROM nshield-hwsp:12.80.4
+
+$ docker build .
+(...)
+Successfully built 6bc5a2146e09
+
+$ docker run --net=host -v /opt/nfast/kmdata:/opt/nfast/kmdata:ro -v /opt/nfast/sockets.hwsp:/opt/nfast/sockets 6bc5a2146e09
+
+Unable to set file descriptor resource hard limit to 65536 due to error Operation not permitted
+Hardserver INIT: Information: overridding setting unix_privsocket_name with environment variable NFAST_PRIVSERVER with the value: /opt/nfast/sockets-priv/privnserver
+Hardserver INIT: Information: overridding setting nt_privpipe_name with environment variable NFAST_PRIVSERVER with the value: /opt/nfast/sockets-priv/privnserver
+Hardserver INIT: Notice: Hardserver using priority class queueing algorithm: 0 classes and 0 modules total.
+Hardserver INIT: Notice: No IP address config found; binding to all interfaces (0.0.0.0:9004).
+Hardserver INIT: Notice: IPv6 Impath binding to specific address :: :9004.
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Notice: File descriptor limit: 1024 (soft), 1024 (hard)
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Notice: FIPS140 algorithm self-tests passed
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Information: InitialiseUpcall with 0 devices in progress
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Notice: kneti_generate_soft: privkey hash is 6dafd0a268a4755daf736eb9ac14fec3c96c4265
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Information: Loaded Hardserver kneti file (6dafd0a268a4755daf736eb9ac14fec3c96c4265)
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver INIT: Information: Attempt Pool Module Setup: aEnableBlockingd=false, aEnableOptimisation=false, aEnableCaching=false
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: NFSERV_TARGET_CONCURRENCY=4
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_CLIENT_IO_SERVICE_COUNT=4
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_CLIENT_THREADS_PER_IO_SERVICE=1
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_DEVICE_IO_SERVICE_COUNT=2
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NCORE_USE_TASK_POOL=0
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NCORE_POOL_COUNT=1
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NCORE_REPLY_POOL_COUNT=1
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NCORE_THREADS_PER_POOL=1
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NETCONN_USE_TASK_POOL=0
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_NETCONN_POOL_COUNT=2
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_SUBMIT_USE_TASK_POOL=0
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: NFSERV_SUBMIT_POOL_COUNT=1
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Starting Hardserver Config Spawner service.
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Starting command-processors.
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Starting nCore command processor
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Starting NetConn command processor
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Running command-target services
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: Attempt Pool Module Setup: aEnableBlockingd=true, aEnableOptimisation=true, aEnableCaching=true
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Information: Applying Pool Module Setup: mBlockingEnabled=true, mOptimisationEnabled=true, mCachingEnabled=true
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Creating remote TCP I/O server.
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Notice: Binding IPv4 TCP socket to port 9004 on address 0.0.0.0 for secure network communications.
+2022-12-08 19:46:17 t40b863dec17f0000: Hardserver [FP]: Fatal error during startup: bind: Address already in use

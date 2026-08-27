@@ -1,0 +1,22 @@
+# Artefatos compilados e temporários dos laboratórios
+dinamo/src/connect_hsm
+dinamo/src/gen_ecdh
+*.o
+*.ctx
+*.pub
+*.priv
+*.key
+*.csr
+*.pem
+*.der
+*.sig
+
+# Credenciais e configuração local
+.env
+.env.*
+config/
+secrets/
+
+# Ferramentas e sistemas
+.DS_Store
+__pycache__/

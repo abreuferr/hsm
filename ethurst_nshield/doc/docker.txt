@@ -1,0 +1,141 @@
+$ sudo su
+
+$ mkdir -p /opt/nscop
+
+$ tar xf nscop-1.1.1.tar -C /opt/nscop
+
+$ mount -o loop SecWorld_Lin64-12.80.4.iso /media/cdrom
+
+$ cd /opt/nscop
+
+$ cp make-nshield-hwsp make-nshield-hwsp.BKP
+
+$ vi make-nshield-hwsp
+DEFAULT_FROM="docker.io/library/debian:buster-slim"
+(...)
+docker build --network=host --tag "${TAG}" "$@" ${WORK}
+
+$ ./make-nshield-hwsp /media/cdrom
+
+---------------------------------------- (2022-11-15) ----------------------------------------
+
+$ cd /opt/nfast/sbin
+
+$ ps aux | grep hardserver
+
+$ ./init.d-ncipher stop
+
+$ ps aux | grep hardserver
+
+$ ./make-nshield-hwsp /media/cdrom
+
+---------------------------------------- (2022-12-01) ----------------------------------------
+
+$ cd /opt/nfast/sbin
+
+$ ./init.d-ncipher stop
+
+$ cd /opt/nscop
+
+$ vi make-nshield-hwsp
+(...)
+# RUN /tmp/test.sh #Generates the soft kneti and proves hardserver can run; remove that from the image.
+
+$ cd /opt/nfast/sbin
+
+$ ./make-nshield-hwsp /media/cdrom
+
+$ docker image ls
+REPOSITORY                             TAG                 IMAGE ID       CREATED              SIZE
+nshield-hwsp                           12.80.4             2f255fb47680   About a minute ago   320MB
+debian                                 buster-slim         6dd568177594   2 weeks ago          69.3MB
+
+$ cd /opt/nfast/sbin
+
+$ ./init.d-ncipher start
+
+$ cd /opt/nscop
+
+$ ./make-nshield-hwsp-config-port9044 --output /opt/nscop/config/config <HSM_HOST>
+
+Error from AnonymousKnetiHash command: RemoteServerFailed, <us> (nCErrno(ECONNREFUSED): Connection refused)
+
+$ ./make-nshield-hwsp-config-port9044 --output /opt/nscop/config/config <HSM_HOST>
+
+$ cat /opt/nscop/config/config
+
+$ vi /opt/nscop/config/config
+(...)
+[server_remotecomms_ipv6]
+impath_port=0
+
+$ docker volume create socket1
+socket1
+
+$ docker volume ls
+DRIVER    VOLUME NAME
+local     socket1
+
+$ docker volume inspect socket1
+[
+    {
+        "CreatedAt": "2022-12-06T14:07:44-03:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/socket1/_data",
+        "Name": "socket1",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+
+$ ./init.d-ncipher stop
+
+$ ps aux | grep hardserver
+
+---------------------------------------- (2022-12-06) ----------------------------------------
+
+$ docker run --net=host -v /opt/nscop/config:/opt/nfast/kmdata/config:ro -v socket1:/opt/nfast/sockets nshield-hwsp:12.80.4
+    OR
+$ docker run --net=host -d -v /opt/nscop/config:/opt/nfast/kmdata/config:ro -v socket1:/opt/nfast/sockets nshield-hwsp:12.80.4
+
+$ docker container ls
+CONTAINER ID   IMAGE                                       COMMAND                  CREATED         STATUS         PORTS     NAMES
+7d725e9c7614   nshield-hwsp:12.80.4                        "/opt/nfast/sbin/nsh…"   7 seconds ago   Up 6 seconds             sharp_cori
+
+$ NFAST_SERVER=/var/lib/docker/volumes/socket1/_data/nserver /opt/nfast/bin/enquiry -m0
+
+$ cd /opt/nscop/
+
+$ vi make-nshield-application
+DEFAULT_FROM="docker.io/library/debian:buster-slim"
+
+$ ./make-nshield-application /media/cdrom
+
+$ docker image ls
+REPOSITORY                             TAG                 IMAGE ID       CREATED          SIZE
+nshield-ubi7                           12.80.4             f72f1382c8e2   43 seconds ago   788MB
+nshield-hwsp                           12.80.4             2f255fb47680   7 days ago       320MB
+
+$ cd /opt/nscop/examples/nfkmverify/
+
+$ docker build . --tag nfkmverifys
+
+# docker image ls
+REPOSITORY                             TAG                 IMAGE ID       CREATED          SIZE
+nfkmverifys                            latest              bea8038e7edf   4 minutes ago    204MB
+nshield-ubi7                           12.80.4             f72f1382c8e2   17 minutes ago   788MB
+nshield-hwsp                           12.80.4             2f255fb47680   7 days ago       320MB
+
+$ cd ../..
+
+$ ./extend-nshield-application --from nfkmverify /media/cdrom
+Detecting nShield software version
+Version is 12.80.4
+Unpacking /media/cdrom/linux/amd64/hwsp.tar.gz ...
+Unpacking /media/cdrom/linux/amd64/ctls.tar.gz ...
+Adding files...
+Building image...
+Sending build context to Docker daemon  702.7MB
+Step 1/4 : FROM nfkmverify
+pull access denied for nfkmverify, repository does not exist or may require 'docker login': denied: requested access to the resource is denied

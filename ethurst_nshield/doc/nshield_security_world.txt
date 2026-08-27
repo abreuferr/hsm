@@ -1,0 +1,219 @@
+#: Title :  nShield as a Service (nSaaS)
+#: Author : Caio Abreu Ferreira - cferreira at senhasegura dot com
+#: Description :  nShield as a Service (nSaaS)
+#: Options :
+
+# LABORATÓRIO: substitua <HSM_HOST> por um host autorizado. Os comandos de
+# enrollment e configuração alteram o ambiente Security World; valide-os primeiro
+# em infraestrutura de teste e mantenha cópia protegida do RFS.
+
+####################################################################
+#
+# Information
+#
+####################################################################
+
+https://www.ncipher.com/products/general-purpose-hsms/nshield-as-a-service
+
+https://nshieldsupport.entrust.com/hc/en-us/articles/360009873277-HowTo-Setup-a-Self-Managed-nShield-as-a-Service-environment
+
+The remote file system (RFS) contains the master copy of the HSM Security World data for backup
+purposes. The RFS can be located on either a client or another network accessible computer where
+the Security World Software is installed. If the RFS is on a client, the same file structure also
+contains the configuration files for that client.
+
+RFS-SYNC to sincronize the Security World
+
+####################################################################
+#
+# Installation
+#
+####################################################################
+
+# Root
+#
+$ sudo su
+
+# Mount ISO
+#
+$ mount -t iso9660 -o loop SecWorld_Lin64-12.80.4.iso /media/cdrom
+
+$ cd /
+
+# Uncompress
+#
+$ tar xf /media/cdrom/linux/amd64/ctd.tar.gz
+$ tar xf /media/cdrom/linux/amd64/ctls.tar.gz
+$ tar xf /media/cdrom/linux/amd64/devref.tar.gz
+$ tar xf /media/cdrom/linux/amd64/hwsp.tar.gz
+$ tar xf /media/cdrom/linux/amd64/javasp.tar.gz
+$ tar xf /media/cdrom/linux/amd64/jd.tar.gz
+$ tar xf /media/cdrom/linux/amd64/ncsnmp.tar.gz
+$ tar xf /media/cdrom/linux/amd64/raserv.tar.gz
+
+$ cd /opt/nfast/sbin
+
+# Install
+#
+$ ./install
+
+# Edit config file
+#
+$ vi /opt/nfast/kmdata/config/config
+    [server_remotecomms_ipv6]
+    impath_port=0
+
+# Install
+#
+$ ./install
+
+####################################################################
+#
+# Settings
+#
+####################################################################
+
+$ cd /opt/nfast/bin/
+
+# Software Version
+#
+$ ./anonkneti -v
+
+anonkneti, nshield (12.80.4-274-813026a)
+
+#
+# Copy the Security World and module files to additional client hosts
+#
+
+# Copy the Security World and module files to the Security World client’s
+# kmdata/local folder.
+#
+$ cd /home/mt4adm
+$ unzip dmz.1250n8.zip
+$ cp dmz.1250n8/* /opt/nfast/kmdata/local/
+
+$ cd /opt/nfast/bin/
+
+####################################################################
+#
+# ESN and KNETI-hash
+#
+####################################################################
+
+# The anonkneti command returns an output with the ESN and the KNETI hash
+# in the following form: <ESN> <KNETI-hash>
+
+# nSRES (nShield Remote Evaluation Service)
+#
+$ ./anonkneti --port 9084 <HSM_HOST>
+
+7425-03E0-D947 00681b15d0c79af58b6ac3728c709f0b95940a50
+
+# nSRTL (nShield Remote Test Lab)
+#
+$ ./anonkneti --port 9084 <HSM_HOST>
+
+9A26-03E0-D947 292c91cc2028f4a827d3796f3865075eea3db130
+
+####################################################################
+#
+# Enroll the HSM - configure the client to communicate with the HSM
+#
+####################################################################
+
+# The nethsmenroll command-line utility edits the client hardserver’s
+# configuration file to add the specified nShield Connect.
+# HA (High Availability)
+
+$ ./nethsmenroll --force --port 9084 <HSM_HOST>
+
+Remote module returned ESN: 7425-03E0-D947
+                    HKNETI: 00681b15d0c79af58b6ac3728c709f0b95940a50
+Is the above correct? (yes/no): <YES>
+OK configuring hardserver's nethsm imports
+
+$ ./nethsmenroll --force --port 9084 <HSM_HOST>
+
+Remote module returned ESN: 9A26-03E0-D947
+                    HKNETI: 292c91cc2028f4a827d3796f3865075eea3db130
+Is the above correct? (yes/no): <YES>
+OK configuring hardserver's nethsm imports
+
+
+####################################################################
+#
+# To test HSM connectivity
+#
+####################################################################
+
+# Run enquiry command to validate nfast server is in an operational state
+#
+# Check that the module is installed and configured correctly on the client.
+#
+$ ./enquiry
+Server:
+serial number        7425-03E0-D947 9A26-03E0-D947
+mode                 operational
+(...)
+
+Module #1:
+serial number        7425-03E0-D947
+mode                 operational
+(...)
+
+Module #2:
+serial number        9A26-03E0-D947
+mode                 operational
+(...)
+
+# Run nfkminfo to confirm HSM's are in a Factory State
+#
+$ ./nfkminfo
+(...)
+$ ./perfcheck -m1 signing:287
+(...)
+
+####################################################################
+#
+# Generate an application key protected by the HSM
+#
+####################################################################
+
+$ ./generatekey --generate --batch simple type=rsa size=2048 plainname=keya ident=202209191542 certreq=yes
+Key successfully generated.
+Path to key: /opt/nfast/kmdata/local/key_simple_202209191542
+Path to CSR: /opt/nfast/bin/simple_202209191542_req
+
+$ ls -l /opt/nfast/kmdata/local/
+-rw-r--r-- 1 root nfast  7016 set 19 15:42 key_simple_202209191542
+-rw-r--r-- 1 root nfast  7008 jun  8 15:16 key_simple_abcd
+-rw-r--r-- 1 root nfast  5000 set 19 12:06 module_7425-03E0-D947
+-rw-r--r-- 1 root nfast  4996 set 19 12:06 module_9A26-03E0-D947
+-rw-r--r-- 1 root nfast 36736 set 19 12:07 world
+
+####################################################################
+#
+# Example code
+#
+####################################################################
+
+/opt/nfast/c/ctd/examples/
+
+/opt/nfast/java/
+
+/opt/nfast/python
+
+/opt/nfast/python3/
+
+
+####################################################################
+#
+# Simulation
+#
+####################################################################
+
+# ss-01
+$ ./generatekey --generate --batch simple type=rsa size=2048 plainname=keya ident=202211251749 certreq=yes
+
+# ss-02
+$ ./generatekey --generate --batch simple type=rsa size=2048 plainname=keya ident=202211251750 certreq=yes
