@@ -19,12 +19,12 @@ produção nem devem ser executados em tokens ou partições que contenham dados
 
 1. **Fundamentos e laboratório sem hardware:** [SoftHSM](softhsm/doc/softhsm.txt).
 2. **Token USB e PKCS#11:** [SafeNet eToken](safenet/doc/safenet_5110.md).
-3. **Segurança de plataforma:** [TPM 2.0](tpmv2/readme.md).
-4. **HSMs de rede:** [Dinamo](dinamo/readme.md) e exemplos C/PKCS#11 em
+3. **Segurança de plataforma:** [TPM 2.0](tpmv2/README.md).
+4. **HSMs de rede:** [Dinamo](dinamo/README.md) e exemplos C/PKCS#11 em
    `dinamo/src/`.
-5. **HSMs empresariais/cloud:** [Thales Luna DPoD](thales_luna/leiame.md) e
+5. **HSMs empresariais/cloud:** [Thales Luna DPoD](thales_luna/README.md) e
    [Entrust nShield](ethurst_nshield/doc/docker.txt).
-6. **Cloud KMS (planejado):** [Google Cloud KMS](google_kms/leiame.md) — só
+6. **Cloud KMS (planejado):** [Google Cloud KMS](google_kms/README.md) — só
    cabeçalho por enquanto, sem conteúdo de laboratório.
 
 ## Convenções dos roteiros
