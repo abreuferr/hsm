@@ -309,6 +309,41 @@ ssh-keygen -D /usr/lib/libeToken.so >> ~/.ssh/authorized_keys
 ssh -I /usr/lib/libeToken.so <USUARIO>@<HOST_SSH>
 ```
 
+### Carregar o token no ssh-agent
+
+```bash
+ssh-add -e /usr/local/lib64/libeToken.so; ssh-add -s /usr/local/lib64/libeToken.so
+ssh-add -l
+```
+
+#### Problema: "agent refused operation" e token não detectado
+
+Sintomas:
+
+- `ssh-add -s` retorna `Could not add card ...: agent refused operation`.
+- `pkcs11-tool --module <lib> -L` lista os slots como `(empty)`.
+- `pcsc_scan -r` retorna `No reader found`.
+- `journalctl -u pcscd` mostra `Can't libusb_open(...): LIBUSB_ERROR_ACCESS`.
+
+Causa: o `pcscd` roda como usuário `pcscd`, não como root. O dispositivo `/dev/bus/usb/*` do token é `root:scard 660`. O usuário `pcscd` não pertence ao grupo `scard` e não consegue abrir o token.
+
+Correção:
+
+```bash
+sudo usermod -aG scard pcscd
+sudo systemctl restart pcscd.socket pcscd
+pcsc_scan -r
+```
+
+Se o grupo não bastar, o unit usa `PrivateUsers=full`. Crie um drop-in com `sudo systemctl edit pcscd`:
+
+```ini
+[Service]
+PrivateUsers=no
+```
+
+> **Nota:** o YubiKey pode falhar no `pcscd` com `Wrong interface`. É outro problema e não afeta o eToken.
+
 ## ASSINATURA
 
 ### Assinar e Verificar um arquivo utilizando chave RSA id 01
