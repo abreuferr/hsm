@@ -316,6 +316,39 @@ ssh-add -e /usr/local/lib64/libeToken.so; ssh-add -s /usr/local/lib64/libeToken.
 ssh-add -l
 ```
 
+#### Problema: "Could not open a connection to your authentication agent"
+
+Causa: nenhum `ssh-agent` está rodando e `SSH_AUTH_SOCK` está vazio. Ocorre em sessão Wayland (Sway), pois o `.xinitrc` não roda nela.
+
+Correção: criar um serviço de usuário do systemd.
+
+```ini
+# ~/.config/systemd/user/ssh-agent.service
+[Unit]
+Description=SSH key agent
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh-agent -D -a %t/ssh-agent.socket
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+# ~/.zshenv
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-agent.socket"
+```
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now ssh-agent.service
+source ~/.zshenv
+ssh-add -s /usr/local/lib64/libeToken.so
+```
+
+> **Nota:** o agente começa vazio a cada login. Rode `ssh-add -s` e informe o PIN. Apps iniciados direto pelo Sway, fora de um terminal zsh, não herdam `SSH_AUTH_SOCK`.
+
 #### Problema: "agent refused operation" e token não detectado
 
 Sintomas:
